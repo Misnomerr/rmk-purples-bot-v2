@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import asyncio
 
 from database import setup_database
 
@@ -17,13 +18,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    setup_database()
-
-    await bot.load_extension("cogs.tickets")
-
-    synced = await bot.tree.sync()
-
     print(f"Logged in as {bot.user}")
-    print(f"Synced {len(synced)} commands")
 
-bot.run(TOKEN)
+async def main():
+   
