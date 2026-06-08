@@ -34,12 +34,77 @@ class TicketTypeSelect(discord.ui.Select):
             options=options
         )
 
-    async def callback(self, interaction: discord.Interaction):
+  async def callback(self, interaction: discord.Interaction):
 
-        await interaction.response.send_message(
-            f"You selected: {self.values[0]}",
-            ephemeral=True
+    guild = interaction.guild
+
+    ticket_type = self.values[0]
+
+    number = get_next_ticket_number(ticket_type)
+
+    channel_name = f"{ticket_type}-{number}"
+
+    category = guild.get_channel(
+        config.TICKETS_CATEGORY_ID
+    )
+
+    staff_role = guild.get_role(
+        config.STAFF_ROLE_ID
+    )
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(
+            view_channel=False
+        ),
+
+        interaction.user: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True
+        ),
+
+        staff_role: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True
+        ),
+
+        guild.me: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True
         )
+    }
+
+    channel = await guild.create_text_channel(
+        name=channel_name,
+        category=category,
+        overwrites=overwrites
+    )
+
+    create_ticket(
+        number,
+        ticket_type,
+        interaction.user.id,
+        channel.id
+    )
+
+    embed = discord.Embed(
+        title="Ticket Created",
+        description=(
+            f"Type: {ticket_type}\n"
+            f"Number: {number}"
+        ),
+        color=0x8000ff
+    )
+
+    await channel.send(
+        f"{interaction.user.mention}"
+    )
+
+    await channel.send(embed=embed)
+
+    await interaction.response.send_message(
+        f"Created {channel.mention}",
+        ephemeral=True
+    )
 
 
 class TicketTypeView(discord.ui.View):
