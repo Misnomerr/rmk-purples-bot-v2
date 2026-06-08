@@ -18,5 +18,4 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
     print("RMK Purples V2 Online")
 
-try:
-   
+bot.run(TOKEN)
