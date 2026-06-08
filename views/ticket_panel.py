@@ -1,5 +1,10 @@
 import discord
+import config
 
+from database import (
+    get_next_ticket_number,
+    create_ticket
+)
 
 class TicketTypeSelect(discord.ui.Select):
     def __init__(self):
