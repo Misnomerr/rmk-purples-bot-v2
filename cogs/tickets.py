@@ -2,6 +2,9 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+from views.ticket_panel import CreateTicketButton
+
+
 class Tickets(commands.Cog):
 
     def __init__(self, bot):
@@ -15,16 +18,20 @@ class Tickets(commands.Cog):
 
         embed = discord.Embed(
             title="RMK Purples Support",
-            description="Click below to create a ticket.",
+            description="Click the button below to create a ticket.",
             color=0x8000ff
         )
 
-        await interaction.channel.send(embed=embed)
+        await interaction.channel.send(
+            embed=embed,
+            view=CreateTicketButton()
+        )
 
         await interaction.response.send_message(
-            "Panel created.",
+            "Ticket panel created.",
             ephemeral=True
         )
+
 
 async def setup(bot):
     await bot.add_cog(Tickets(bot))
