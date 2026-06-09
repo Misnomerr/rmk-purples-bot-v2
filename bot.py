@@ -21,8 +21,8 @@ bot = commands.Bot(
 @bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
-        synced = await bot.tree.sync()
-        await ctx.send(f"Synced {len(synced)} commands")
+        synced = await bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f"Synced {len(synced)} commands to this server")
     else:
         await ctx.send("❌ You don't have permission to do that.")
 
