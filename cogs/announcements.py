@@ -5,6 +5,8 @@ from discord import app_commands
 
 from utils.permissions import is_staff
 
+GUILD_ID = discord.Object(id=1513299075062042777)
+
 
 class Announcements(commands.Cog):
 
@@ -15,6 +17,7 @@ class Announcements(commands.Cog):
         name="announce",
         description="Post an announcement"
     )
+    @app_commands.guilds(GUILD_ID)
     async def announce(
         self,
         interaction: discord.Interaction,
@@ -53,6 +56,7 @@ class Announcements(commands.Cog):
         name="embedannounce",
         description="Post an embedded announcement"
     )
+    @app_commands.guilds(GUILD_ID)
     async def embedannounce(
         self,
         interaction: discord.Interaction,
@@ -92,6 +96,7 @@ class Announcements(commands.Cog):
         name="poll",
         description="Create a poll"
     )
+    @app_commands.guilds(GUILD_ID)
     async def poll(
         self,
         interaction: discord.Interaction,
