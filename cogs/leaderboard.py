@@ -23,14 +23,13 @@ class Leaderboard(commands.Cog):
         description="View your staff statistics"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def mystats(
         self,
         interaction: discord.Interaction
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -74,7 +73,7 @@ class Leaderboard(commands.Cog):
         description="View staff statistics"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def staffstats(
         self,
         interaction: discord.Interaction,
@@ -82,7 +81,6 @@ class Leaderboard(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -125,14 +123,13 @@ class Leaderboard(commands.Cog):
         description="View staff leaderboard"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def leaderboard(
         self,
         interaction: discord.Interaction
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -147,20 +144,16 @@ class Leaderboard(commands.Cog):
         )
 
         if not leaderboard:
-
             embed.description = (
                 "No staff statistics found."
             )
-
         else:
-
             lines = []
 
             for position, row in enumerate(
                 leaderboard,
                 start=1
             ):
-
                 member = (
                     interaction.guild.get_member(
                         row[0]
@@ -168,7 +161,6 @@ class Leaderboard(commands.Cog):
                 )
 
                 if member:
-
                     total = (
                         row[1]
                         + row[2]
@@ -183,9 +175,7 @@ class Leaderboard(commands.Cog):
                         f"Score: {total}"
                     )
 
-            embed.description = "\n\n".join(
-                lines
-            )
+            embed.description = "\n\n".join(lines)
 
         await interaction.response.send_message(
             embed=embed
@@ -193,7 +183,6 @@ class Leaderboard(commands.Cog):
 
 
 async def setup(bot):
-
     await bot.add_cog(
         Leaderboard(bot)
     )
