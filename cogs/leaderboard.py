@@ -23,6 +23,7 @@ class Leaderboard(commands.Cog):
         description="View your staff statistics"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(use_application_commands=True)
     async def mystats(
         self,
         interaction: discord.Interaction
@@ -73,6 +74,7 @@ class Leaderboard(commands.Cog):
         description="View staff statistics"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(use_application_commands=True)
     async def staffstats(
         self,
         interaction: discord.Interaction,
@@ -123,6 +125,7 @@ class Leaderboard(commands.Cog):
         description="View staff leaderboard"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(use_application_commands=True)
     async def leaderboard(
         self,
         interaction: discord.Interaction
