@@ -19,6 +19,16 @@ bot = commands.Bot(
     intents=intents
 )
 
+async def load(extension, name):
+    try:
+        await bot.load_extension(extension)
+        print(f"✅ Loaded {name}")
+    except commands.ExtensionAlreadyLoaded:
+        await bot.reload_extension(extension)
+        print(f"🔄 Reloaded {name}")
+    except Exception as e:
+        print(f"❌ {name} error: {e}")
+
 @bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
@@ -37,31 +47,11 @@ async def on_ready():
 
 async def main():
     setup_database()
-    try:
-        await bot.load_extension("cogs.tickets")
-        print("✅ Loaded tickets")
-    except Exception as e:
-        print(f"❌ Tickets error: {e}")
-    try:
-        await bot.load_extension("cogs.feedback")
-        print("✅ Loaded feedback")
-    except Exception as e:
-        print(f"❌ Feedback error: {e}")
-    try:
-        await bot.load_extension("cogs.leaderboard")
-        print("✅ Loaded leaderboard")
-    except Exception as e:
-        print(f"❌ Leaderboard error: {e}")
-    try:
-        await bot.load_extension("cogs.announcements")
-        print("✅ Loaded announcements")
-    except Exception as e:
-        print(f"❌ Announcements error: {e}")
-    try:
-        await bot.load_extension("cogs.embed_builder")
-        print("✅ Loaded embed builder")
-    except Exception as e:
-        print(f"❌ Embed builder error: {e}")
+    await load("cogs.tickets", "tickets")
+    await load("cogs.feedback", "feedback")
+    await load("cogs.leaderboard", "leaderboard")
+    await load("cogs.announcements", "announcements")
+    await load("cogs.embed_builder", "embed builder")
     await bot.start(TOKEN)
 
 asyncio.run(main())
