@@ -12,6 +12,93 @@ from database import (
 )
 
 
+class AddUserModal(discord.ui.Modal, title="Add User"):
+
+    user_id = discord.ui.TextInput(
+        label="User ID",
+        placeholder="Enter Discord User ID"
+    )
+
+    async def on_submit(
+        self,
+        interaction: discord.Interaction
+    ):
+
+        try:
+
+            member = interaction.guild.get_member(
+                int(self.user_id.value)
+            )
+
+            if member is None:
+
+                await interaction.response.send_message(
+                    "❌ User not found.",
+                    ephemeral=True
+                )
+                return
+
+            await interaction.channel.set_permissions(
+                member,
+                view_channel=True,
+                send_messages=True
+            )
+
+            await interaction.response.send_message(
+                f"✅ Added {member.mention}"
+            )
+
+        except Exception as e:
+
+            await interaction.response.send_message(
+                f"❌ Error: {e}",
+                ephemeral=True
+            )
+
+
+class RemoveUserModal(discord.ui.Modal, title="Remove User"):
+
+    user_id = discord.ui.TextInput(
+        label="User ID",
+        placeholder="Enter Discord User ID"
+    )
+
+    async def on_submit(
+        self,
+        interaction: discord.Interaction
+    ):
+
+        try:
+
+            member = interaction.guild.get_member(
+                int(self.user_id.value)
+            )
+
+            if member is None:
+
+                await interaction.response.send_message(
+                    "❌ User not found.",
+                    ephemeral=True
+                )
+                return
+
+            await interaction.channel.set_permissions(
+                member,
+                overwrite=None
+            )
+
+            await interaction.response.send_message(
+                f"✅ Removed {member.mention}"
+            )
+
+        except Exception as e:
+
+            await interaction.response.send_message(
+                f"❌ Error: {e}",
+                ephemeral=True
+            )
+
+
 class TicketControls(discord.ui.View):
 
     def __init__(self):
@@ -83,6 +170,62 @@ class TicketControls(discord.ui.View):
 
         await interaction.response.send_message(
             embed=embed
+        )
+
+    @discord.ui.button(
+        label="Add User",
+        emoji="➕",
+        style=discord.ButtonStyle.success,
+        custom_id="add_user_ticket"
+    )
+    async def add_user(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+
+        staff_role = interaction.guild.get_role(
+            config.STAFF_ROLE_ID
+        )
+
+        if staff_role not in interaction.user.roles:
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_modal(
+            AddUserModal()
+        )
+
+    @discord.ui.button(
+        label="Remove User",
+        emoji="➖",
+        style=discord.ButtonStyle.secondary,
+        custom_id="remove_user_ticket"
+    )
+    async def remove_user(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+
+        staff_role = interaction.guild.get_role(
+            config.STAFF_ROLE_ID
+        )
+
+        if staff_role not in interaction.user.roles:
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_modal(
+            RemoveUserModal()
         )
 
     @discord.ui.button(
