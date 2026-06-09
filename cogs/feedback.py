@@ -1,8 +1,6 @@
 import discord
-
 from discord.ext import commands
 from discord import app_commands
-
 from views.feedback_views import FeedbackModal
 
 GUILD_ID = discord.Object(id=1513299075062042777)
@@ -18,18 +16,14 @@ class Feedback(commands.Cog):
         description="Submit customer feedback"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions()
     async def feedback(
         self,
         interaction: discord.Interaction
     ):
-
         await interaction.response.send_modal(
             FeedbackModal(self.bot)
         )
 
 
 async def setup(bot):
-    await bot.add_cog(
-        Feedback(bot)
-    )
+    await bot.add_cog(Feedback(bot))
