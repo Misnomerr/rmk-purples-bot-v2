@@ -17,6 +17,7 @@ class Tickets(commands.Cog):
         description="Create ticket panel"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(use_application_commands=True)
     async def setup(self, interaction: discord.Interaction):
 
         embed = discord.Embed(
