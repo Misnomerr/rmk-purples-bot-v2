@@ -21,6 +21,7 @@ bot = commands.Bot(
 @bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
+        bot.tree.copy_global_to(guild=ctx.guild)
         synced = await bot.tree.sync(guild=ctx.guild)
         await ctx.send(f"Synced {len(synced)} commands to this server")
     else:
