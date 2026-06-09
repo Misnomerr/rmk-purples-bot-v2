@@ -19,8 +19,10 @@ bot = commands.Bot(
     intents=intents
 )
 
+
 @bot.event
 async def on_ready():
+
     print(f"Logged in as {bot.user}")
 
     bot.add_view(CreateTicketButton())
@@ -28,17 +30,39 @@ async def on_ready():
     bot.add_view(FeedbackReviewView())
 
     try:
+
         synced = await bot.tree.sync()
-        print(f"Synced {len(synced)} commands")
+
+        print(
+            f"Synced {len(synced)} commands"
+        )
+
     except Exception as e:
-        print(f"Sync error: {e}")
+
+        print(
+            f"Sync error: {e}"
+        )
+
 
 async def main():
+
     setup_database()
 
-    await bot.load_extension("cogs.tickets")
-    await bot.load_extension("cogs.feedback")
+    await bot.load_extension(
+        "cogs.tickets"
+    )
 
-    await bot.start(TOKEN)
+    await bot.load_extension(
+        "cogs.feedback"
+    )
+
+    await bot.load_extension(
+        "cogs.leaderboard"
+    )
+
+    await bot.start(
+        TOKEN
+    )
+
 
 asyncio.run(main())
