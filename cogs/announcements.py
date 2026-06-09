@@ -18,7 +18,7 @@ class Announcements(commands.Cog):
         description="Post an announcement"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def announce(
         self,
         interaction: discord.Interaction,
@@ -27,7 +27,6 @@ class Announcements(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -44,9 +43,7 @@ class Announcements(commands.Cog):
             text=f"Posted by {interaction.user.display_name}"
         )
 
-        await channel.send(
-            embed=embed
-        )
+        await channel.send(embed=embed)
 
         await interaction.response.send_message(
             f"✅ Announcement posted in {channel.mention}",
@@ -58,7 +55,7 @@ class Announcements(commands.Cog):
         description="Post an embedded announcement"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def embedannounce(
         self,
         interaction: discord.Interaction,
@@ -68,7 +65,6 @@ class Announcements(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -85,9 +81,7 @@ class Announcements(commands.Cog):
             text=f"Posted by {interaction.user.display_name}"
         )
 
-        await channel.send(
-            embed=embed
-        )
+        await channel.send(embed=embed)
 
         await interaction.response.send_message(
             f"✅ Announcement posted in {channel.mention}",
@@ -99,7 +93,7 @@ class Announcements(commands.Cog):
         description="Create a poll"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def poll(
         self,
         interaction: discord.Interaction,
@@ -108,7 +102,6 @@ class Announcements(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -125,9 +118,7 @@ class Announcements(commands.Cog):
             text=f"Created by {interaction.user.display_name}"
         )
 
-        poll_message = await channel.send(
-            embed=embed
-        )
+        poll_message = await channel.send(embed=embed)
 
         await poll_message.add_reaction("👍")
         await poll_message.add_reaction("👎")
@@ -139,7 +130,6 @@ class Announcements(commands.Cog):
 
 
 async def setup(bot):
-
     await bot.add_cog(
         Announcements(bot)
     )
