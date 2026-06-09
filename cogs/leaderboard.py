@@ -10,6 +10,8 @@ from database import (
 
 from utils.permissions import is_staff
 
+GUILD_ID = discord.Object(id=1513299075062042777)
+
 
 class Leaderboard(commands.Cog):
 
@@ -20,6 +22,7 @@ class Leaderboard(commands.Cog):
         name="mystats",
         description="View your staff statistics"
     )
+    @app_commands.guilds(GUILD_ID)
     async def mystats(
         self,
         interaction: discord.Interaction
@@ -69,6 +72,7 @@ class Leaderboard(commands.Cog):
         name="staffstats",
         description="View staff statistics"
     )
+    @app_commands.guilds(GUILD_ID)
     async def staffstats(
         self,
         interaction: discord.Interaction,
@@ -118,6 +122,7 @@ class Leaderboard(commands.Cog):
         name="leaderboard",
         description="View staff leaderboard"
     )
+    @app_commands.guilds(GUILD_ID)
     async def leaderboard(
         self,
         interaction: discord.Interaction
