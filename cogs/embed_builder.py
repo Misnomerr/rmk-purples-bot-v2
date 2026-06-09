@@ -16,6 +16,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a custom embed"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def embedbuilder(
         self,
         interaction: discord.Interaction,
@@ -41,6 +42,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a welcome embed"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def welcomebuilder(
         self,
         interaction: discord.Interaction,
@@ -74,6 +76,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a FAQ embed"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def faqbuilder(
         self,
         interaction: discord.Interaction,
