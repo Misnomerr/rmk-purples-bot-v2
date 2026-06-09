@@ -2,6 +2,153 @@ import discord
 import config
 
 
+class FeedbackReviewView(discord.ui.View):
+
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="Approve",
+        emoji="✅",
+        style=discord.ButtonStyle.success,
+        custom_id="approve_feedback"
+    )
+    async def approve_feedback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+
+        staff_role = interaction.guild.get_role(
+            config.STAFF_ROLE_ID
+        )
+
+        if staff_role not in interaction.user.roles:
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        embed = interaction.message.embeds[0]
+
+        rating = embed.fields[0].value
+        review = embed.fields[1].value
+        publish_as = embed.fields[3].value
+
+        customer_channel = (
+            interaction.guild.get_channel(
+                config.CUSTOMER_FEEDBACK_CHANNEL_ID
+            )
+        )
+
+        if customer_channel is None:
+
+            await interaction.response.send_message(
+                "❌ Customer feedback channel not found.",
+                ephemeral=True
+            )
+            return
+
+        public_embed = discord.Embed(
+            title="Customer Feedback",
+            color=0x8000ff
+        )
+
+        public_embed.add_field(
+            name="Rating",
+            value=rating,
+            inline=False
+        )
+
+        public_embed.add_field(
+            name="Review",
+            value=review,
+            inline=False
+        )
+
+        public_embed.set_footer(
+            text=f"Submitted By: {publish_as}"
+        )
+
+        await customer_channel.send(
+            embed=public_embed
+        )
+
+        approved_embed = embed.copy()
+
+        approved_embed.color = 0x00ff00
+
+        approved_embed.add_field(
+            name="Status",
+            value=(
+                f"✅ Approved by "
+                f"{interaction.user.mention}"
+            ),
+            inline=False
+        )
+
+        await interaction.message.edit(
+            embed=approved_embed,
+            view=None
+        )
+
+        await interaction.response.send_message(
+            "✅ Feedback approved.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="Reject",
+        emoji="❌",
+        style=discord.ButtonStyle.danger,
+        custom_id="reject_feedback"
+    )
+    async def reject_feedback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+
+        staff_role = interaction.guild.get_role(
+            config.STAFF_ROLE_ID
+        )
+
+        if staff_role not in interaction.user.roles:
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        embed = interaction.message.embeds[0]
+
+        rejected_embed = embed.copy()
+
+        rejected_embed.color = 0xff0000
+
+        rejected_embed.add_field(
+            name="Status",
+            value=(
+                f"❌ Rejected by "
+                f"{interaction.user.mention}"
+            ),
+            inline=False
+        )
+
+        await interaction.message.edit(
+            embed=rejected_embed,
+            view=None
+        )
+
+        await interaction.response.send_message(
+            "❌ Feedback rejected.",
+            ephemeral=True
+        )
+
+
 class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
     rating = discord.ui.TextInput(
@@ -87,7 +234,7 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
             embed.add_field(
                 name="Publish As",
                 value=(
-                    "Anonymous"
+                    "Anonymous Customer"
                     if anonymous
                     else interaction.user.display_name
                 ),
@@ -95,7 +242,8 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
             )
 
             await review_channel.send(
-                embed=embed
+                embed=embed,
+                view=FeedbackReviewView()
             )
 
             await interaction.response.send_message(
