@@ -1,6 +1,12 @@
 import discord
 import config
 
+from utils.permissions import is_owner
+
+from database import (
+    increment_feedback_approved
+)
+
 
 class FeedbackReviewView(discord.ui.View):
 
@@ -19,14 +25,10 @@ class FeedbackReviewView(discord.ui.View):
         button: discord.ui.Button
     ):
 
-        staff_role = interaction.guild.get_role(
-            config.STAFF_ROLE_ID
-        )
-
-        if staff_role not in interaction.user.roles:
+        if not is_owner(interaction.user):
 
             await interaction.response.send_message(
-                "❌ Staff only.",
+                "❌ Owners only.",
                 ephemeral=True
             )
             return
@@ -76,6 +78,10 @@ class FeedbackReviewView(discord.ui.View):
             embed=public_embed
         )
 
+        increment_feedback_approved(
+            interaction.user.id
+        )
+
         approved_embed = embed.copy()
 
         approved_embed.color = 0x00ff00
@@ -111,14 +117,10 @@ class FeedbackReviewView(discord.ui.View):
         button: discord.ui.Button
     ):
 
-        staff_role = interaction.guild.get_role(
-            config.STAFF_ROLE_ID
-        )
-
-        if staff_role not in interaction.user.roles:
+        if not is_owner(interaction.user):
 
             await interaction.response.send_message(
-                "❌ Staff only.",
+                "❌ Owners only.",
                 ephemeral=True
             )
             return
