@@ -5,6 +5,7 @@ import config
 from io import BytesIO
 
 from utils.transcripts import generate_transcript
+from utils.permissions import is_staff
 
 from database import (
     claim_ticket,
@@ -84,11 +85,7 @@ class TicketControls(discord.ui.View):
         button: discord.ui.Button
     ):
 
-        staff_role = interaction.guild.get_role(
-            config.STAFF_ROLE_ID
-        )
-
-        if staff_role not in interaction.user.roles:
+        if not is_staff(interaction.user):
 
             await interaction.response.send_message(
                 "❌ Staff only.",
@@ -152,11 +149,7 @@ class TicketControls(discord.ui.View):
         button: discord.ui.Button
     ):
 
-        staff_role = interaction.guild.get_role(
-            config.STAFF_ROLE_ID
-        )
-
-        if staff_role not in interaction.user.roles:
+        if not is_staff(interaction.user):
 
             await interaction.response.send_message(
                 "❌ Staff only.",
@@ -182,11 +175,7 @@ class TicketControls(discord.ui.View):
         button: discord.ui.Button
     ):
 
-        staff_role = interaction.guild.get_role(
-            config.STAFF_ROLE_ID
-        )
-
-        if staff_role not in interaction.user.roles:
+        if not is_staff(interaction.user):
 
             await interaction.response.send_message(
                 "❌ Staff only.",
@@ -211,6 +200,14 @@ class TicketControls(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
+        if not is_staff(interaction.user):
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
 
         await interaction.response.send_message(
             "🔒 Generating transcript..."
