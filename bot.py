@@ -21,18 +21,8 @@ bot = commands.Bot(
 @bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
-        bot.tree.copy_global_to(guild=ctx.guild)
-        synced = await bot.tree.sync(guild=ctx.guild)
+        synced = await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
         await ctx.send(f"Synced {len(synced)} commands to this server")
-    else:
-        await ctx.send("❌ You don't have permission to do that.")
-
-@bot.command()
-async def clearcommands(ctx):
-    if ctx.author.id == 1151788519853924403:
-        bot.tree.clear_commands(guild=None)
-        await bot.tree.sync()
-        await ctx.send("✅ Cleared global commands")
     else:
         await ctx.send("❌ You don't have permission to do that.")
 
