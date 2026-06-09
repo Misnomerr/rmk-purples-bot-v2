@@ -151,10 +151,15 @@ class FeedbackReviewView(discord.ui.View):
 
 class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
-    def __init__(self, bot):
+    def __init__(
+        self,
+        bot,
+        staff_member
+    ):
         super().__init__()
 
         self.bot = bot
+        self.staff_member = staff_member
 
     rating = discord.ui.TextInput(
         label="Rating (1-5)",
@@ -175,12 +180,6 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
         max_length=3
     )
 
-    include_images = discord.ui.TextInput(
-        label="Include Images? (Y/N)",
-        placeholder="Y or N",
-        max_length=3
-    )
-
     async def on_submit(
         self,
         interaction: discord.Interaction
@@ -188,7 +187,9 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
         try:
 
-            rating_number = int(self.rating.value)
+            rating_number = int(
+                self.rating.value
+            )
 
             if rating_number < 1 or rating_number > 5:
 
@@ -201,13 +202,10 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
             stars = "⭐" * rating_number
 
             anonymous = (
-                self.anonymous.value.strip().lower()
-                in ["yes", "y"]
-            )
-
-            include_images = (
-                self.include_images.value.strip().lower()
-                in ["yes", "y"]
+                self.anonymous.value
+                .strip()
+                .lower()
+                in ["y", "yes"]
             )
 
             review_channel = (
@@ -236,6 +234,12 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
             )
 
             embed.add_field(
+                name="Staff Member",
+                value=self.staff_member.mention,
+                inline=False
+            )
+
+            embed.add_field(
                 name="Review",
                 value=self.review.value,
                 inline=False
@@ -257,100 +261,13 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
                 inline=False
             )
 
-            if not include_images:
-
-                await review_channel.send(
-                    embed=embed,
-                    view=FeedbackReviewView()
-                )
-
-                await interaction.response.send_message(
-                    "✅ Feedback submitted for review.",
-                    ephemeral=True
-                )
-
-                return
-
-            await interaction.response.send_message(
-                "📷 Please upload up to 2 images within 120 seconds.",
-                ephemeral=True
-            )
-
-            def check(message):
-
-                return (
-                    message.author.id
-                    == interaction.user.id
-                    and
-                    message.channel.id
-                    == interaction.channel.id
-                )
-
-            try:
-
-                image_message = await self.bot.wait_for(
-                    "message",
-                    timeout=120,
-                    check=check
-                )
-
-            except Exception:
-
-                await interaction.followup.send(
-                    "❌ Image upload timed out.",
-                    ephemeral=True
-                )
-                return
-
-            attachments = image_message.attachments[:2]
-
-            if len(attachments) == 0:
-
-                await interaction.followup.send(
-                    "❌ No images detected.",
-                    ephemeral=True
-                )
-                return
-
-            image_urls = []
-
-            for attachment in attachments:
-
-                if attachment.content_type and (
-                    attachment.content_type.startswith(
-                        "image/"
-                    )
-                ):
-                    image_urls.append(
-                        attachment.url
-                    )
-
-            if len(image_urls) == 0:
-
-                await interaction.followup.send(
-                    "❌ No valid images detected.",
-                    ephemeral=True
-                )
-                return
-
-            for index, url in enumerate(
-                image_urls,
-                start=1
-            ):
-
-                embed.add_field(
-                    name=f"Image {index}",
-                    value=url,
-                    inline=False
-                )
-
             await review_channel.send(
                 embed=embed,
                 view=FeedbackReviewView()
             )
 
-            await interaction.followup.send(
-                "✅ Feedback and images submitted for review.",
+            await interaction.response.send_message(
+                "✅ Feedback submitted for review.",
                 ephemeral=True
             )
 
