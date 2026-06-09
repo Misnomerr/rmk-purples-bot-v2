@@ -8,11 +8,62 @@ from database import (
     get_leaderboard
 )
 
+from utils.permissions import is_staff
+
 
 class Leaderboard(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    @app_commands.command(
+        name="mystats",
+        description="View your staff statistics"
+    )
+    async def mystats(
+        self,
+        interaction: discord.Interaction
+    ):
+
+        if not is_staff(interaction.user):
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        stats = get_staff_stats(
+            interaction.user.id
+        )
+
+        embed = discord.Embed(
+            title=f"📊 {interaction.user.display_name}",
+            color=0x8000ff
+        )
+
+        embed.add_field(
+            name="Tickets Claimed",
+            value=stats["tickets_claimed"],
+            inline=False
+        )
+
+        embed.add_field(
+            name="Tickets Closed",
+            value=stats["tickets_closed"],
+            inline=False
+        )
+
+        embed.add_field(
+            name="Feedback Approved",
+            value=stats["feedback_approved"],
+            inline=False
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
 
     @app_commands.command(
         name="staffstats",
@@ -23,6 +74,14 @@ class Leaderboard(commands.Cog):
         interaction: discord.Interaction,
         member: discord.Member
     ):
+
+        if not is_staff(interaction.user):
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
 
         stats = get_staff_stats(
             member.id
@@ -64,6 +123,14 @@ class Leaderboard(commands.Cog):
         interaction: discord.Interaction
     ):
 
+        if not is_staff(interaction.user):
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
         leaderboard = get_leaderboard()
 
         embed = discord.Embed(
@@ -101,8 +168,7 @@ class Leaderboard(commands.Cog):
                     )
 
                     lines.append(
-                        f"**{position}. "
-                        f"{member.display_name}**\n"
+                        f"**{position}. {member.display_name}**\n"
                         f"Claims: {row[1]} | "
                         f"Closed: {row[2]} | "
                         f"Approved: {row[3]} | "
