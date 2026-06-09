@@ -276,6 +276,84 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
                 ephemeral=True
             )
 
+            def check(message):
+
+                return (
+                    message.author.id
+                    == interaction.user.id
+                    and
+                    message.channel.id
+                    == interaction.channel.id
+                )
+
+            try:
+
+                image_message = await self.bot.wait_for(
+                    "message",
+                    timeout=120,
+                    check=check
+                )
+
+            except Exception:
+
+                await interaction.followup.send(
+                    "❌ Image upload timed out.",
+                    ephemeral=True
+                )
+                return
+
+            attachments = image_message.attachments[:2]
+
+            if len(attachments) == 0:
+
+                await interaction.followup.send(
+                    "❌ No images detected.",
+                    ephemeral=True
+                )
+                return
+
+            image_urls = []
+
+            for attachment in attachments:
+
+                if attachment.content_type and (
+                    attachment.content_type.startswith(
+                        "image/"
+                    )
+                ):
+                    image_urls.append(
+                        attachment.url
+                    )
+
+            if len(image_urls) == 0:
+
+                await interaction.followup.send(
+                    "❌ No valid images detected.",
+                    ephemeral=True
+                )
+                return
+
+            for index, url in enumerate(
+                image_urls,
+                start=1
+            ):
+
+                embed.add_field(
+                    name=f"Image {index}",
+                    value=url,
+                    inline=False
+                )
+
+            await review_channel.send(
+                embed=embed,
+                view=FeedbackReviewView()
+            )
+
+            await interaction.followup.send(
+                "✅ Feedback and images submitted for review.",
+                ephemeral=True
+            )
+
         except ValueError:
 
             await interaction.response.send_message(
