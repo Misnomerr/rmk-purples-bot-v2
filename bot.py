@@ -9,6 +9,8 @@ from views.feedback_views import FeedbackReviewView
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
+GUILD_ID = discord.Object(id=1513299075062042777)
+
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
@@ -21,7 +23,7 @@ bot = commands.Bot(
 @bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
-        synced = await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
+        synced = await bot.tree.sync(guild=GUILD_ID)
         await ctx.send(f"Synced {len(synced)} commands to this server")
     else:
         await ctx.send("❌ You don't have permission to do that.")
@@ -32,7 +34,11 @@ async def on_ready():
     bot.add_view(CreateTicketButton())
     bot.add_view(TicketControls())
     bot.add_view(FeedbackReviewView())
-    print("Ready")
+    try:
+        synced = await bot.tree.sync(guild=GUILD_ID)
+        print(f"Synced {len(synced)} commands to guild")
+    except Exception as e:
+        print(f"Sync error: {e}")
 
 async def main():
     setup_database()
