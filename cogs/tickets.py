@@ -4,6 +4,8 @@ from discord import app_commands
 
 from views.ticket_panel import CreateTicketButton
 
+GUILD_ID = discord.Object(id=1513299075062042777)
+
 
 class Tickets(commands.Cog):
 
@@ -14,6 +16,7 @@ class Tickets(commands.Cog):
         name="setup",
         description="Create ticket panel"
     )
+    @app_commands.guilds(GUILD_ID)
     async def setup(self, interaction: discord.Interaction):
 
         embed = discord.Embed(
