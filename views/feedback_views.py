@@ -151,6 +151,11 @@ class FeedbackReviewView(discord.ui.View):
 
 class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
+    def __init__(self, bot):
+        super().__init__()
+
+        self.bot = bot
+
     rating = discord.ui.TextInput(
         label="Rating (1-5)",
         placeholder="Enter a number between 1 and 5",
@@ -166,6 +171,12 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
     anonymous = discord.ui.TextInput(
         label="Anonymous? (Yes/No)",
+        placeholder="Yes or No",
+        max_length=3
+    )
+
+    include_images = discord.ui.TextInput(
+        label="Include Images? (Yes/No)",
         placeholder="Yes or No",
         max_length=3
     )
@@ -191,6 +202,11 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
             anonymous = (
                 self.anonymous.value.strip().lower()
+                == "yes"
+            )
+
+            include_images = (
+                self.include_images.value.strip().lower()
                 == "yes"
             )
 
@@ -241,13 +257,22 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
                 inline=False
             )
 
-            await review_channel.send(
-                embed=embed,
-                view=FeedbackReviewView()
-            )
+            if not include_images:
+
+                await review_channel.send(
+                    embed=embed,
+                    view=FeedbackReviewView()
+                )
+
+                await interaction.response.send_message(
+                    "✅ Feedback submitted for review.",
+                    ephemeral=True
+                )
+
+                return
 
             await interaction.response.send_message(
-                "✅ Feedback submitted for review.",
+                "📷 Please upload up to 2 images within 120 seconds.",
                 ephemeral=True
             )
 
