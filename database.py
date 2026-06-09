@@ -1,15 +1,15 @@
-import sqlite3
-from pathlib import Path
+import os
+import psycopg
 
-DB_PATH = Path("data/database.db")
-DB_PATH.parent.mkdir(exist_ok=True)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    return psycopg.connect(DATABASE_URL)
 
 
 def setup_database():
+
     conn = get_connection()
     cur = conn.cursor()
 
@@ -22,13 +22,24 @@ def setup_database():
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tickets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         ticket_number TEXT,
         ticket_type TEXT,
-        creator_id INTEGER,
-        channel_id INTEGER,
+        creator_id BIGINT,
+        channel_id BIGINT,
         status TEXT,
-        claimed_by INTEGER
+        claimed_by BIGINT
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS feedback (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT,
+        rating INTEGER,
+        review TEXT,
+        publish_as TEXT,
+        status TEXT DEFAULT 'pending'
     )
     """)
 
@@ -37,28 +48,44 @@ def setup_database():
 
 
 def get_next_ticket_number(category: str):
+
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute(
-        "SELECT current_number FROM ticket_counter WHERE category=?",
+        """
+        SELECT current_number
+        FROM ticket_counter
+        WHERE category=%s
+        """,
         (category,)
     )
 
     row = cur.fetchone()
 
     if row:
+
         number = row[0] + 1
 
         cur.execute(
-            "UPDATE ticket_counter SET current_number=? WHERE category=?",
+            """
+            UPDATE ticket_counter
+            SET current_number=%s
+            WHERE category=%s
+            """,
             (number, category)
         )
+
     else:
+
         number = 1
 
         cur.execute(
-            "INSERT INTO ticket_counter(category,current_number) VALUES(?,?)",
+            """
+            INSERT INTO ticket_counter
+            (category, current_number)
+            VALUES (%s, %s)
+            """,
             (category, number)
         )
 
@@ -68,7 +95,13 @@ def get_next_ticket_number(category: str):
     return f"{number:04d}"
 
 
-def create_ticket(ticket_number, ticket_type, creator_id, channel_id):
+def create_ticket(
+    ticket_number,
+    ticket_type,
+    creator_id,
+    channel_id
+):
+
     conn = get_connection()
     cur = conn.cursor()
 
@@ -83,7 +116,7 @@ def create_ticket(ticket_number, ticket_type, creator_id, channel_id):
             status,
             claimed_by
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """,
         (
             ticket_number,
@@ -100,16 +133,20 @@ def create_ticket(ticket_number, ticket_type, creator_id, channel_id):
 
 
 def claim_ticket(channel_id, staff_id):
+
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute(
         """
         UPDATE tickets
-        SET claimed_by=?
-        WHERE channel_id=?
+        SET claimed_by=%s
+        WHERE channel_id=%s
         """,
-        (staff_id, channel_id)
+        (
+            staff_id,
+            channel_id
+        )
     )
 
     conn.commit()
@@ -117,6 +154,7 @@ def claim_ticket(channel_id, staff_id):
 
 
 def get_claimed_by(channel_id):
+
     conn = get_connection()
     cur = conn.cursor()
 
@@ -124,7 +162,7 @@ def get_claimed_by(channel_id):
         """
         SELECT claimed_by
         FROM tickets
-        WHERE channel_id=?
+        WHERE channel_id=%s
         """,
         (channel_id,)
     )
