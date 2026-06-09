@@ -48,17 +48,37 @@ async def main():
 
     setup_database()
 
-    await bot.load_extension(
-        "cogs.tickets"
-    )
+    try:
+        await bot.load_extension(
+            "cogs.tickets"
+        )
+        print("✅ Loaded tickets")
+    except Exception as e:
+        print(f"❌ Tickets error: {e}")
 
-    await bot.load_extension(
-        "cogs.feedback"
-    )
+    try:
+        await bot.load_extension(
+            "cogs.feedback"
+        )
+        print("✅ Loaded feedback")
+    except Exception as e:
+        print(f"❌ Feedback error: {e}")
 
-    await bot.load_extension(
-        "cogs.leaderboard"
-    )
+    try:
+        await bot.load_extension(
+            "cogs.leaderboard"
+        )
+        print("✅ Loaded leaderboard")
+    except Exception as e:
+        print(f"❌ Leaderboard error: {e}")
+
+    try:
+        await bot.load_extension(
+            "cogs.announcements"
+        )
+        print("✅ Loaded announcements")
+    except Exception as e:
+        print(f"❌ Announcements error: {e}")
 
     await bot.start(
         TOKEN
