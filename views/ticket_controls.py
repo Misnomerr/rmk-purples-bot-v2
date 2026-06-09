@@ -6,6 +6,11 @@ from io import BytesIO
 
 from utils.transcripts import generate_transcript
 
+from database import (
+    claim_ticket,
+    get_claimed_by
+)
+
 
 class TicketControls(discord.ui.View):
 
@@ -18,15 +23,66 @@ class TicketControls(discord.ui.View):
         style=discord.ButtonStyle.primary,
         custom_id="claim_ticket"
     )
-    async def claim_ticket(
+    async def claim_button(
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
 
+        staff_role = interaction.guild.get_role(
+            config.STAFF_ROLE_ID
+        )
+
+        if staff_role not in interaction.user.roles:
+
+            await interaction.response.send_message(
+                "❌ Staff only.",
+                ephemeral=True
+            )
+            return
+
+        claimed_by = get_claimed_by(
+            interaction.channel.id
+        )
+
+        if claimed_by:
+
+            member = interaction.guild.get_member(
+                claimed_by
+            )
+
+            if member:
+
+                await interaction.response.send_message(
+                    f"❌ Already claimed by {member.mention}",
+                    ephemeral=True
+                )
+
+            else:
+
+                await interaction.response.send_message(
+                    "❌ Ticket already claimed.",
+                    ephemeral=True
+                )
+
+            return
+
+        claim_ticket(
+            interaction.channel.id,
+            interaction.user.id
+        )
+
+        embed = discord.Embed(
+            title="📌 Ticket Claimed",
+            description=(
+                f"{interaction.user.mention} "
+                f"has claimed this ticket."
+            ),
+            color=0x8000ff
+        )
+
         await interaction.response.send_message(
-            f"📌 Claimed by {interaction.user.mention}",
-            ephemeral=False
+            embed=embed
         )
 
     @discord.ui.button(
