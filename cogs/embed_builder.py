@@ -5,6 +5,8 @@ from discord import app_commands
 
 from utils.permissions import is_staff
 
+GUILD_ID = discord.Object(id=1513299075062042777)
+
 
 class EmbedBuilder(commands.Cog):
 
@@ -15,6 +17,7 @@ class EmbedBuilder(commands.Cog):
         name="embedbuilder",
         description="Create a custom embed"
     )
+    @app_commands.guilds(GUILD_ID)
     async def embedbuilder(
         self,
         interaction: discord.Interaction,
@@ -62,6 +65,7 @@ class EmbedBuilder(commands.Cog):
         name="welcomebuilder",
         description="Create a welcome embed"
     )
+    @app_commands.guilds(GUILD_ID)
     async def welcomebuilder(
         self,
         interaction: discord.Interaction,
@@ -117,6 +121,7 @@ class EmbedBuilder(commands.Cog):
         name="faqbuilder",
         description="Create a FAQ embed"
     )
+    @app_commands.guilds(GUILD_ID)
     async def faqbuilder(
         self,
         interaction: discord.Interaction,
