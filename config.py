@@ -11,6 +11,10 @@ CREATE_TICKET_CHANNEL_ID = int(
     os.getenv("CREATE_TICKET_CHANNEL_ID")
 )
 
+ADMIN_ROLE_ID = int(
+    os.getenv("ADMIN_ROLE_ID")
+)
+
 TICKET_LOGS_CHANNEL_ID = int(
     os.getenv("TICKET_LOGS_CHANNEL_ID")
 )
