@@ -35,6 +35,7 @@ async def main():
     setup_database()
 
     await bot.load_extension("cogs.tickets")
+    await bot.load_extension("cogs.feedback")
 
     await bot.start(TOKEN)
 
