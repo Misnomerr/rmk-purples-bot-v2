@@ -3,7 +3,6 @@ import psycopg
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-redploy force
 
 def get_connection():
     return psycopg.connect(DATABASE_URL)
