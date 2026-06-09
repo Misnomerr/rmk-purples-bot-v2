@@ -151,15 +151,10 @@ class FeedbackReviewView(discord.ui.View):
 
 class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
-    def __init__(
-        self,
-        bot,
-        staff_member
-    ):
+    def __init__(self, bot):
         super().__init__()
 
         self.bot = bot
-        self.staff_member = staff_member
 
     rating = discord.ui.TextInput(
         label="Rating (1-5)",
@@ -230,12 +225,6 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
             embed.add_field(
                 name="Rating",
                 value=stars,
-                inline=False
-            )
-
-            embed.add_field(
-                name="Staff Member",
-                value=self.staff_member.mention,
                 inline=False
             )
 
