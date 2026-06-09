@@ -27,21 +27,22 @@ async def sync(ctx):
     else:
         await ctx.send("❌ You don't have permission to do that.")
 
+@bot.command()
+async def clearcommands(ctx):
+    if ctx.author.id == 1151788519853924403:
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+        await ctx.send("✅ Cleared global commands")
+    else:
+        await ctx.send("❌ You don't have permission to do that.")
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
     bot.add_view(CreateTicketButton())
     bot.add_view(TicketControls())
     bot.add_view(FeedbackReviewView())
-    try:
-        synced = await bot.tree.sync()
-        print(
-            f"Synced {len(synced)} commands"
-        )
-    except Exception as e:
-        print(
-            f"Sync error: {e}"
-        )
+    print("Ready")
 
 async def main():
     setup_database()
