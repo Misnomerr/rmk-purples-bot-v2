@@ -12,91 +12,59 @@ from database import (
 )
 
 
-class AddUserModal(discord.ui.Modal, title="Add User"):
+class AddUserSelect(discord.ui.UserSelect):
 
-    user_id = discord.ui.TextInput(
-        label="User ID",
-        placeholder="Enter Discord User ID"
-    )
-
-    async def on_submit(
+    async def callback(
         self,
         interaction: discord.Interaction
     ):
 
-        try:
+        member = self.values[0]
 
-            member = interaction.guild.get_member(
-                int(self.user_id.value)
-            )
+        await interaction.channel.set_permissions(
+            member,
+            view_channel=True,
+            send_messages=True
+        )
 
-            if member is None:
-
-                await interaction.response.send_message(
-                    "❌ User not found.",
-                    ephemeral=True
-                )
-                return
-
-            await interaction.channel.set_permissions(
-                member,
-                view_channel=True,
-                send_messages=True
-            )
-
-            await interaction.response.send_message(
-                f"✅ Added {member.mention}"
-            )
-
-        except Exception as e:
-
-            await interaction.response.send_message(
-                f"❌ Error: {e}",
-                ephemeral=True
-            )
+        await interaction.response.send_message(
+            f"✅ Added {member.mention}"
+        )
 
 
-class RemoveUserModal(discord.ui.Modal, title="Remove User"):
+class RemoveUserSelect(discord.ui.UserSelect):
 
-    user_id = discord.ui.TextInput(
-        label="User ID",
-        placeholder="Enter Discord User ID"
-    )
-
-    async def on_submit(
+    async def callback(
         self,
         interaction: discord.Interaction
     ):
 
-        try:
+        member = self.values[0]
 
-            member = interaction.guild.get_member(
-                int(self.user_id.value)
-            )
+        await interaction.channel.set_permissions(
+            member,
+            overwrite=None
+        )
 
-            if member is None:
+        await interaction.response.send_message(
+            f"✅ Removed {member.mention}"
+        )
 
-                await interaction.response.send_message(
-                    "❌ User not found.",
-                    ephemeral=True
-                )
-                return
 
-            await interaction.channel.set_permissions(
-                member,
-                overwrite=None
-            )
+class AddUserView(discord.ui.View):
 
-            await interaction.response.send_message(
-                f"✅ Removed {member.mention}"
-            )
+    def __init__(self):
+        super().__init__(timeout=60)
 
-        except Exception as e:
+        self.add_item(AddUserSelect())
 
-            await interaction.response.send_message(
-                f"❌ Error: {e}",
-                ephemeral=True
-            )
+
+class RemoveUserView(discord.ui.View):
+
+    def __init__(self):
+        super().__init__(timeout=60)
+
+        self.add_item(RemoveUserSelect())
 
 
 class TicketControls(discord.ui.View):
@@ -196,8 +164,10 @@ class TicketControls(discord.ui.View):
             )
             return
 
-        await interaction.response.send_modal(
-            AddUserModal()
+        await interaction.response.send_message(
+            "Select a user to add:",
+            view=AddUserView(),
+            ephemeral=True
         )
 
     @discord.ui.button(
@@ -224,8 +194,10 @@ class TicketControls(discord.ui.View):
             )
             return
 
-        await interaction.response.send_modal(
-            RemoveUserModal()
+        await interaction.response.send_message(
+            "Select a user to remove:",
+            view=RemoveUserView(),
+            ephemeral=True
         )
 
     @discord.ui.button(
