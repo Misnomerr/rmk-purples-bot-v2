@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 
 class TicketControls(discord.ui.View):
@@ -39,9 +40,6 @@ class TicketControls(discord.ui.View):
             "🔒 Closing ticket in 5 seconds..."
         )
 
-        await discord.utils.sleep_until(
-            discord.utils.utcnow() +
-            discord.timedelta(seconds=5)
-        )
+        await asyncio.sleep(5)
 
         await interaction.channel.delete()
