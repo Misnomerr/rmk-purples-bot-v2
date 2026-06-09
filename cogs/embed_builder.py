@@ -21,7 +21,8 @@ class EmbedBuilder(commands.Cog):
         channel: discord.TextChannel,
         title: str,
         description: str,
-        footer: str
+        footer: str,
+        image_url: str = None
     ):
 
         if not is_staff(interaction.user):
@@ -41,6 +42,12 @@ class EmbedBuilder(commands.Cog):
         embed.set_footer(
             text=footer
         )
+
+        if image_url:
+
+            embed.set_image(
+                url=image_url
+            )
 
         await channel.send(
             embed=embed
