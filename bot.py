@@ -6,6 +6,7 @@ import asyncio
 from database import setup_database
 from views.ticket_panel import CreateTicketButton
 from views.ticket_controls import TicketControls
+from views.feedback_views import FeedbackReviewView
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -24,6 +25,7 @@ async def on_ready():
 
     bot.add_view(CreateTicketButton())
     bot.add_view(TicketControls())
+    bot.add_view(FeedbackReviewView())
 
     try:
         synced = await bot.tree.sync()
