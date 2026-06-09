@@ -43,6 +43,15 @@ def setup_database():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS staff_stats (
+        staff_id BIGINT PRIMARY KEY,
+        tickets_claimed INTEGER DEFAULT 0,
+        tickets_closed INTEGER DEFAULT 0,
+        feedback_approved INTEGER DEFAULT 0
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -147,6 +156,72 @@ def claim_ticket(channel_id, staff_id):
             staff_id,
             channel_id
         )
+    )
+
+    cur.execute(
+        """
+        INSERT INTO staff_stats
+        (
+            staff_id,
+            tickets_claimed
+        )
+        VALUES (%s, 1)
+        ON CONFLICT (staff_id)
+        DO UPDATE SET
+        tickets_claimed =
+        staff_stats.tickets_claimed + 1
+        """,
+        (staff_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def increment_closed(staff_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO staff_stats
+        (
+            staff_id,
+            tickets_closed
+        )
+        VALUES (%s, 1)
+        ON CONFLICT (staff_id)
+        DO UPDATE SET
+        tickets_closed =
+        staff_stats.tickets_closed + 1
+        """,
+        (staff_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def increment_feedback_approved(staff_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO staff_stats
+        (
+            staff_id,
+            feedback_approved
+        )
+        VALUES (%s, 1)
+        ON CONFLICT (staff_id)
+        DO UPDATE SET
+        feedback_approved =
+        staff_stats.feedback_approved + 1
+        """,
+        (staff_id,)
     )
 
     conn.commit()
