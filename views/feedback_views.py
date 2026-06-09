@@ -170,14 +170,14 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
     )
 
     anonymous = discord.ui.TextInput(
-        label="Anonymous? (Yes/No)",
-        placeholder="Yes or No",
+        label="Anonymous? (Y/N)",
+        placeholder="Y or N",
         max_length=3
     )
 
     include_images = discord.ui.TextInput(
-        label="Include Images? (Yes/No)",
-        placeholder="Yes or No",
+        label="Include Images? (Y/N)",
+        placeholder="Y or N",
         max_length=3
     )
 
@@ -202,12 +202,12 @@ class FeedbackModal(discord.ui.Modal, title="Submit Feedback"):
 
             anonymous = (
                 self.anonymous.value.strip().lower()
-                == "yes"
+                in ["yes", "y"]
             )
 
             include_images = (
                 self.include_images.value.strip().lower()
-                == "yes"
+                in ["yes", "y"]
             )
 
             review_channel = (
