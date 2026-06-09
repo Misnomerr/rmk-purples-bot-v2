@@ -49,6 +49,7 @@ class EmbedBuilder(commands.Cog):
         channel: discord.TextChannel,
         title: str,
         introduction: str,
+        introduction_2: str,
         services: str,
         standards: str,
         getting_started: str
@@ -59,6 +60,7 @@ class EmbedBuilder(commands.Cog):
 
         description = (
             f"{introduction}\n\n"
+            f"{introduction_2}\n\n"
             f"**Our Services**\n"
             f"{services}\n\n"
             f"**Our Standards**\n"
