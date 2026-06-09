@@ -80,6 +80,14 @@ async def main():
     except Exception as e:
         print(f"❌ Announcements error: {e}")
 
+    try:
+        await bot.load_extension(
+            "cogs.embed_builder"
+        )
+        print("✅ Loaded embed builder")
+    except Exception as e:
+        print(f"❌ Embed builder error: {e}")
+
     await bot.start(
         TOKEN
     )
