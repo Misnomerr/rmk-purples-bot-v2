@@ -8,7 +8,6 @@ from views.ticket_controls import TicketControls
 from views.feedback_views import FeedbackReviewView
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-
 GUILD_ID = discord.Object(id=1513299075062042777)
 
 intents = discord.Intents.default()
@@ -21,12 +20,24 @@ bot = commands.Bot(
 )
 
 @bot.command()
+async def nukecommands(ctx):
+    if ctx.author.id == 1151788519853924403:
+        bot.tree.clear_commands(guild=GUILD_ID)
+        await bot.tree.sync(guild=GUILD_ID)
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+        await ctx.send("✅ All commands nuked")
+    else:
+        await ctx.send("❌ No permission.")
+
+@bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
+        bot.tree.copy_global_to(guild=GUILD_ID)
         synced = await bot.tree.sync(guild=GUILD_ID)
         await ctx.send(f"Synced {len(synced)} commands to this server")
     else:
-        await ctx.send("❌ You don't have permission to do that.")
+        await ctx.send("❌ No permission.")
 
 @bot.event
 async def on_ready():
@@ -34,51 +45,35 @@ async def on_ready():
     bot.add_view(CreateTicketButton())
     bot.add_view(TicketControls())
     bot.add_view(FeedbackReviewView())
-    try:
-        synced = await bot.tree.sync(guild=GUILD_ID)
-        print(f"Synced {len(synced)} commands to guild")
-    except Exception as e:
-        print(f"Sync error: {e}")
+    print("Ready")
 
 async def main():
     setup_database()
     try:
-        await bot.load_extension(
-            "cogs.tickets"
-        )
+        await bot.load_extension("cogs.tickets")
         print("✅ Loaded tickets")
     except Exception as e:
         print(f"❌ Tickets error: {e}")
     try:
-        await bot.load_extension(
-            "cogs.feedback"
-        )
+        await bot.load_extension("cogs.feedback")
         print("✅ Loaded feedback")
     except Exception as e:
         print(f"❌ Feedback error: {e}")
     try:
-        await bot.load_extension(
-            "cogs.leaderboard"
-        )
+        await bot.load_extension("cogs.leaderboard")
         print("✅ Loaded leaderboard")
     except Exception as e:
         print(f"❌ Leaderboard error: {e}")
     try:
-        await bot.load_extension(
-            "cogs.announcements"
-        )
+        await bot.load_extension("cogs.announcements")
         print("✅ Loaded announcements")
     except Exception as e:
         print(f"❌ Announcements error: {e}")
     try:
-        await bot.load_extension(
-            "cogs.embed_builder"
-        )
+        await bot.load_extension("cogs.embed_builder")
         print("✅ Loaded embed builder")
     except Exception as e:
         print(f"❌ Embed builder error: {e}")
-    await bot.start(
-        TOKEN
-    )
+    await bot.start(TOKEN)
 
 asyncio.run(main())
