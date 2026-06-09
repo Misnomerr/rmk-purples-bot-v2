@@ -18,7 +18,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a custom embed"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def embedbuilder(
         self,
         interaction: discord.Interaction,
@@ -30,7 +30,6 @@ class EmbedBuilder(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -43,19 +42,12 @@ class EmbedBuilder(commands.Cog):
             color=0x8000ff
         )
 
-        embed.set_footer(
-            text=footer
-        )
+        embed.set_footer(text=footer)
 
         if image_url:
+            embed.set_image(url=image_url)
 
-            embed.set_image(
-                url=image_url
-            )
-
-        await channel.send(
-            embed=embed
-        )
+        await channel.send(embed=embed)
 
         await interaction.response.send_message(
             f"✅ Embed posted in {channel.mention}",
@@ -67,7 +59,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a welcome embed"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def welcomebuilder(
         self,
         interaction: discord.Interaction,
@@ -78,7 +70,6 @@ class EmbedBuilder(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -95,10 +86,7 @@ class EmbedBuilder(commands.Cog):
         )
 
         if extra_message:
-
-            description += (
-                f"\n\n⭐ {extra_message}"
-            )
+            description += f"\n\n⭐ {extra_message}"
 
         embed = discord.Embed(
             title="Welcome",
@@ -106,13 +94,9 @@ class EmbedBuilder(commands.Cog):
             color=0x8000ff
         )
 
-        embed.set_footer(
-            text="Welcome to the community"
-        )
+        embed.set_footer(text="Welcome to the community")
 
-        await channel.send(
-            embed=embed
-        )
+        await channel.send(embed=embed)
 
         await interaction.response.send_message(
             f"✅ Welcome embed posted in {channel.mention}",
@@ -124,7 +108,7 @@ class EmbedBuilder(commands.Cog):
         description="Create a FAQ embed"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def faqbuilder(
         self,
         interaction: discord.Interaction,
@@ -138,7 +122,6 @@ class EmbedBuilder(commands.Cog):
     ):
 
         if not is_staff(interaction.user):
-
             await interaction.response.send_message(
                 "❌ Staff only.",
                 ephemeral=True
@@ -150,31 +133,13 @@ class EmbedBuilder(commands.Cog):
             color=0x8000ff
         )
 
-        embed.add_field(
-            name=question_1,
-            value=answer_1,
-            inline=False
-        )
+        embed.add_field(name=question_1, value=answer_1, inline=False)
+        embed.add_field(name=question_2, value=answer_2, inline=False)
+        embed.add_field(name=question_3, value=answer_3, inline=False)
 
-        embed.add_field(
-            name=question_2,
-            value=answer_2,
-            inline=False
-        )
+        embed.set_footer(text="Frequently Asked Questions")
 
-        embed.add_field(
-            name=question_3,
-            value=answer_3,
-            inline=False
-        )
-
-        embed.set_footer(
-            text="Frequently Asked Questions"
-        )
-
-        await channel.send(
-            embed=embed
-        )
+        await channel.send(embed=embed)
 
         await interaction.response.send_message(
             f"✅ FAQ posted in {channel.mention}",
@@ -183,7 +148,6 @@ class EmbedBuilder(commands.Cog):
 
 
 async def setup(bot):
-
     await bot.add_cog(
         EmbedBuilder(bot)
     )
