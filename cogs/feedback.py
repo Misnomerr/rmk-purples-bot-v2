@@ -21,7 +21,7 @@ class Feedback(commands.Cog):
     ):
 
         await interaction.response.send_modal(
-            FeedbackModal()
+            FeedbackModal(self.bot)
         )
 
 
