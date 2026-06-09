@@ -17,15 +17,11 @@ class Feedback(commands.Cog):
     )
     async def feedback(
         self,
-        interaction: discord.Interaction,
-        staff: discord.Member
+        interaction: discord.Interaction
     ):
 
         await interaction.response.send_modal(
-            FeedbackModal(
-                self.bot,
-                staff
-            )
+            FeedbackModal(self.bot)
         )
 
 
