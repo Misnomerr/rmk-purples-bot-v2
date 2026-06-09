@@ -18,7 +18,7 @@ class Feedback(commands.Cog):
         description="Submit customer feedback"
     )
     @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(use_application_commands=True)
+    @app_commands.default_permissions()
     async def feedback(
         self,
         interaction: discord.Interaction
