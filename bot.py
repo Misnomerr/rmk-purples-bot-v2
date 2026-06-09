@@ -20,20 +20,8 @@ bot = commands.Bot(
 )
 
 @bot.command()
-async def nukecommands(ctx):
-    if ctx.author.id == 1151788519853924403:
-        bot.tree.clear_commands(guild=GUILD_ID)
-        await bot.tree.sync(guild=GUILD_ID)
-        bot.tree.clear_commands(guild=None)
-        await bot.tree.sync()
-        await ctx.send("✅ All commands nuked")
-    else:
-        await ctx.send("❌ No permission.")
-
-@bot.command()
 async def sync(ctx):
     if ctx.author.id == 1151788519853924403:
-        bot.tree.copy_global_to(guild=GUILD_ID)
         synced = await bot.tree.sync(guild=GUILD_ID)
         await ctx.send(f"Synced {len(synced)} commands to this server")
     else:
