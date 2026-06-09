@@ -47,29 +47,40 @@ class EmbedBuilder(commands.Cog):
         self,
         interaction: discord.Interaction,
         channel: discord.TextChannel,
-        server_name: str,
-        support_channel: discord.TextChannel,
-        extra_message: str = None
+        title: str,
+        introduction: str,
+        services: str,
+        standards: str,
+        getting_started: str
     ):
         if not is_staff(interaction.user):
             await interaction.response.send_message("❌ Staff only.", ephemeral=True)
             return
 
         description = (
-            f"👋 Welcome to **{server_name}**\n\n"
-            f"Thank you for joining our community.\n\n"
-            f"🎫 Need support?\n"
-            f"Visit {support_channel.mention}\n\n"
-            f"📖 Please read our rules and FAQ.\n\n"
-            f"We hope you enjoy your stay!"
+            f"{introduction}\n\n"
+            f"**Our Services**\n"
+            f"{services}\n\n"
+            f"**Our Standards**\n"
+            f"{standards}\n\n"
+            f"**Getting Started**\n"
+            f"{getting_started}"
         )
-        if extra_message:
-            description += f"\n\n⭐ {extra_message}"
 
-        embed = discord.Embed(title="Welcome", description=description, color=0x8000ff)
-        embed.set_footer(text="Welcome to the community")
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=0x8000ff
+        )
+
+        embed.set_footer(text="Welcome to RMK Purples")
+
         await channel.send(embed=embed)
-        await interaction.response.send_message(f"✅ Welcome embed posted in {channel.mention}", ephemeral=True)
+
+        await interaction.response.send_message(
+            f"✅ Welcome embed posted in {channel.mention}",
+            ephemeral=True
+        )
 
     @app_commands.command(
         name="faqbuilder",
