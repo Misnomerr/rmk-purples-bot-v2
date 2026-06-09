@@ -16,6 +16,7 @@ class Announcements(commands.Cog):
         description="Post an announcement"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def announce(
         self,
         interaction: discord.Interaction,
@@ -36,6 +37,7 @@ class Announcements(commands.Cog):
         description="Post an embedded announcement"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def embedannounce(
         self,
         interaction: discord.Interaction,
@@ -57,6 +59,7 @@ class Announcements(commands.Cog):
         description="Create a poll"
     )
     @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
     async def poll(
         self,
         interaction: discord.Interaction,
