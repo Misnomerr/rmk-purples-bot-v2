@@ -6,29 +6,26 @@ from utils.permissions import is_staff
 from database import (
     add_blacklisted_word,
     remove_blacklisted_word,
-    get_blacklisted_words
+    get_blacklisted_words,
+    add_warning,
+    get_warnings,
+    remove_warning,
+    get_warning_count
 )
+from better_profanity import profanity
+from datetime import timedelta
+
+profanity.load_censor_words()
 
 GUILD_ID = discord.Object(id=1513299075062042777)
-
-BUILT_IN_FILTER = [
-    "nigger", "nigga", "faggot", "fag", "chink",
-    "spic", "kike", "tranny", "retard", "cunt",
-    "gook", "wetback", "beaner", "cracker", "dyke",
-    "paki", "raghead", "sandnigger", "zipperhead",
-    "coon", "jigaboo", "spook", "towelhead", "wop",
-    "dago", "greaseball", "heeb", "hymie", "kyke",
-    "shylock", "slope", "slant"
-]
 
 
 def check_message(content: str, blacklist: list):
 
-    content_lower = content.lower()
+    if profanity.contains_profanity(content):
+        return True
 
-    for word in BUILT_IN_FILTER:
-        if word in content_lower:
-            return True
+    content_lower = content.lower()
 
     for word in blacklist:
         if word.lower() in content_lower:
@@ -99,15 +96,16 @@ class Moderation(commands.Cog):
             await mod_logs.send(embed=embed)
 
     @app_commands.command(
-        name="addword",
-        description="Add a word to the blacklist"
+        name="warn",
+        description="Warn a user"
     )
     @app_commands.guilds(GUILD_ID)
     @app_commands.default_permissions(send_messages=True)
-    async def addword(
+    async def warn(
         self,
         interaction: discord.Interaction,
-        word: str
+        member: discord.Member,
+        reason: str
     ):
         if not is_staff(interaction.user):
             await interaction.response.send_message(
@@ -115,73 +113,54 @@ class Moderation(commands.Cog):
             )
             return
 
-        add_blacklisted_word(word)
-
-        await interaction.response.send_message(
-            f"✅ **{word}** has been added to the blacklist.",
-            ephemeral=True
+        warning_id = add_warning(
+            member.id,
+            interaction.user.id,
+            reason
         )
 
-    @app_commands.command(
-        name="removeword",
-        description="Remove a word from the blacklist"
-    )
-    @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(send_messages=True)
-    async def removeword(
-        self,
-        interaction: discord.Interaction,
-        word: str
-    ):
-        if not is_staff(interaction.user):
-            await interaction.response.send_message(
-                "❌ Staff only.", ephemeral=True
+        strike_count = get_warning_count(member.id)
+
+        try:
+            await member.send(
+                f"⚠️ You have received a warning in **{interaction.guild.name}**.\n\n"
+                f"**Reason:** {reason}\n"
+                f"**Strike:** {strike_count}/3\n\n"
+                f"Please ensure you follow our community rules."
             )
-            return
+        except discord.HTTPException:
+            pass
 
-        remove_blacklisted_word(word)
+        if strike_count >= 3:
+            try:
+                await member.timeout(
+                    timedelta(hours=1),
+                    reason=f"3 strikes reached. Last reason: {reason}"
+                )
+            except discord.HTTPException:
+                pass
 
-        await interaction.response.send_message(
-            f"✅ **{word}** has been removed from the blacklist.",
-            ephemeral=True
+        mod_logs = interaction.guild.get_channel(
+            config.MOD_LOGS_CHANNEL_ID
         )
 
-    @app_commands.command(
-        name="listwords",
-        description="View the current blacklist"
-    )
-    @app_commands.guilds(GUILD_ID)
-    @app_commands.default_permissions(send_messages=True)
-    async def listwords(
-        self,
-        interaction: discord.Interaction
-    ):
-        if not is_staff(interaction.user):
-            await interaction.response.send_message(
-                "❌ Staff only.", ephemeral=True
+        if mod_logs:
+
+            embed = discord.Embed(
+                title="⚠️ User Warned",
+                color=0xff8800
             )
-            return
 
-        words = get_blacklisted_words()
-
-        if not words:
-            await interaction.response.send_message(
-                "📋 The blacklist is currently empty.",
-                ephemeral=True
+            embed.add_field(
+                name="User",
+                value=f"{member.mention} ({member})",
+                inline=False
             )
-            return
 
-        embed = discord.Embed(
-            title="📋 Custom Blacklist",
-            description="\n".join(words),
-            color=0x8000ff
-        )
+            embed.add_field(
+                name="Reason",
+                value=reason,
+                inline=False
+            )
 
-        await interaction.response.send_message(
-            embed=embed,
-            ephemeral=True
-        )
-
-
-async def setup(bot):
-    await bot.add_cog(Moderation(bot))
+            embed.add_field(
