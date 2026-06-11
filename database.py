@@ -270,3 +270,201 @@ def get_claimed_by(channel_id):
 
 
 def get_staff_stats(staff_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            tickets_claimed,
+            tickets_closed,
+            feedback_approved
+        FROM staff_stats
+        WHERE staff_id=%s
+        """,
+        (staff_id,)
+    )
+
+    row = cur.fetchone()
+
+    conn.close()
+
+    if row:
+
+        return {
+            "tickets_claimed": row[0],
+            "tickets_closed": row[1],
+            "feedback_approved": row[2]
+        }
+
+    return {
+        "tickets_claimed": 0,
+        "tickets_closed": 0,
+        "feedback_approved": 0
+    }
+
+
+def get_leaderboard():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            staff_id,
+            tickets_claimed,
+            tickets_closed,
+            feedback_approved
+        FROM staff_stats
+        ORDER BY
+            (
+                tickets_claimed +
+                tickets_closed +
+                feedback_approved
+            ) DESC
+        LIMIT 10
+        """
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return rows
+
+
+def add_blacklisted_word(word: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO blacklist (word)
+        VALUES (%s)
+        ON CONFLICT (word) DO NOTHING
+        """,
+        (word.lower(),)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def remove_blacklisted_word(word: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM blacklist
+        WHERE word=%s
+        """,
+        (word.lower(),)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_blacklisted_words():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT word FROM blacklist
+        ORDER BY word ASC
+        """
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return [row[0] for row in rows]
+
+
+def add_warning(user_id: int, staff_id: int, reason: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO warnings (user_id, staff_id, reason)
+        VALUES (%s, %s, %s)
+        RETURNING id
+        """,
+        (user_id, staff_id, reason)
+    )
+
+    warning_id = cur.fetchone()[0]
+
+    conn.commit()
+    conn.close()
+
+    return warning_id
+
+
+def get_warnings(user_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT id, staff_id, reason, timestamp
+        FROM warnings
+        WHERE user_id=%s
+        ORDER BY timestamp ASC
+        """,
+        (user_id,)
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return rows
+
+
+def remove_warning(warning_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM warnings
+        WHERE id=%s
+        """,
+        (warning_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_warning_count(user_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT COUNT(*) FROM warnings
+        WHERE user_id=%s
+        """,
+        (user_id,)
+    )
+
+    count = cur.fetchone()[0]
+
+    conn.close()
+
+    return count
