@@ -3,17 +3,50 @@ from discord.ext import commands
 from discord import app_commands
 from utils.permissions import is_owner
 from views.giveaway_view import GiveawayView
+from database import (
+    create_giveaway,
+    get_giveaway_entries,
+    get_active_giveaways,
+    end_giveaway_db,
+    get_giveaway_entry_count
+)
 import asyncio
 import random
+from datetime import datetime, timedelta
 
 GUILD_ID = discord.Object(id=1513299075062042777)
 
 
-async def end_giveaway(message, prize, winners, entries_ref):
+async def run_giveaway(bot, giveaway_id, message_id, channel_id, prize, winners, end_time):
 
-    await asyncio.sleep(entries_ref["seconds"])
+    now = datetime.utcnow()
+    remaining = (end_time - now).total_seconds()
 
-    entries = entries_ref["view"].entries
+    if remaining > 0:
+        await asyncio.sleep(remaining)
+
+    guild = None
+    for g in bot.guilds:
+        guild = g
+        break
+
+    if not guild:
+        return
+
+    channel = guild.get_channel(channel_id)
+
+    if not channel:
+        return
+
+    try:
+        message = await channel.fetch_message(message_id)
+    except discord.HTTPException:
+        return
+
+    entries = get_giveaway_entries(giveaway_id)
+    count = len(entries)
+
+    end_giveaway_db(giveaway_id)
 
     ended_embed = discord.Embed(
         title="🎉 Giveaway Ended",
@@ -28,11 +61,11 @@ async def end_giveaway(message, prize, winners, entries_ref):
 
     ended_embed.add_field(
         name="Entries",
-        value=str(len(entries)),
+        value=str(count),
         inline=False
     )
 
-    if len(entries) == 0:
+    if count == 0:
 
         ended_embed.add_field(
             name="Winners",
@@ -46,7 +79,7 @@ async def end_giveaway(message, prize, winners, entries_ref):
 
     else:
 
-        actual_winners = min(winners, len(entries))
+        actual_winners = min(winners, count)
         selected = random.sample(entries, actual_winners)
         winner_mentions = "\n".join([f"<@{uid}>" for uid in selected])
 
@@ -60,7 +93,7 @@ async def end_giveaway(message, prize, winners, entries_ref):
 
         await message.edit(embed=ended_embed, view=None)
 
-        await message.channel.send(
+        await channel.send(
             f"🎉 Congratulations {winner_mentions}! "
             f"You won **{prize}**!"
         )
@@ -70,6 +103,27 @@ class Giveaway(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+
+        active = get_active_giveaways()
+
+        for row in active:
+            giveaway_id, message_id, channel_id, prize, winners, end_time = row
+            asyncio.create_task(
+                run_giveaway(
+                    self.bot,
+                    giveaway_id,
+                    message_id,
+                    channel_id,
+                    prize,
+                    winners,
+                    end_time
+                )
+            )
+
+        print(f"🎉 Resumed {len(active)} active giveaway(s)")
 
     @app_commands.command(
         name="giveaway",
@@ -115,6 +169,8 @@ class Giveaway(commands.Cog):
             seconds = duration * 86400
             duration_text = f"{duration} day{'s' if duration != 1 else ''}"
 
+        end_time = datetime.utcnow() + timedelta(seconds=seconds)
+
         view = GiveawayView()
 
         embed = discord.Embed(
@@ -129,13 +185,30 @@ class Giveaway(commands.Cog):
 
         message = await channel.send(embed=embed, view=view)
 
+        giveaway_id = create_giveaway(
+            message.id,
+            channel.id,
+            prize,
+            winners,
+            end_time
+        )
+
         await interaction.response.send_message(
             f"✅ Giveaway started in {channel.mention}",
             ephemeral=True
         )
 
-        entries_ref = {"seconds": seconds, "view": view}
-        asyncio.create_task(end_giveaway(message, prize, winners, entries_ref))
+        asyncio.create_task(
+            run_giveaway(
+                self.bot,
+                giveaway_id,
+                message.id,
+                channel.id,
+                prize,
+                winners,
+                end_time
+            )
+        )
 
 
 async def setup(bot):
