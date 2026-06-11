@@ -12,20 +12,28 @@ from database import (
     remove_warning,
     get_warning_count
 )
-from better_profanity import profanity
 from datetime import timedelta
 
-profanity.load_censor_words()
-
 GUILD_ID = discord.Object(id=1513299075062042777)
+
+BUILT_IN_FILTER = [
+    "nigger", "nigga", "faggot", "fag", "chink",
+    "spic", "kike", "tranny", "retard", "cunt",
+    "gook", "wetback", "beaner", "cracker", "dyke",
+    "paki", "raghead", "sandnigger", "zipperhead",
+    "coon", "jigaboo", "spook", "towelhead", "wop",
+    "dago", "greaseball", "heeb", "hymie", "kyke",
+    "shylock", "slope", "slant"
+]
 
 
 def check_message(content: str, blacklist: list):
 
-    if profanity.contains_profanity(content):
-        return True
-
     content_lower = content.lower()
+
+    for word in BUILT_IN_FILTER:
+        if word in content_lower:
+            return True
 
     for word in blacklist:
         if word.lower() in content_lower:
