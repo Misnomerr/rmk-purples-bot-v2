@@ -2,10 +2,68 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from utils.permissions import is_owner
+from views.giveaway_view import GiveawayView
 import asyncio
 import random
 
 GUILD_ID = discord.Object(id=1513299075062042777)
+
+
+async def end_giveaway(message, prize, winners, entries_ref):
+
+    await asyncio.sleep(entries_ref["seconds"])
+
+    entries = entries_ref["view"].entries
+
+    ended_embed = discord.Embed(
+        title="🎉 Giveaway Ended",
+        color=0x8000ff
+    )
+
+    ended_embed.add_field(
+        name="Prize",
+        value=prize,
+        inline=False
+    )
+
+    ended_embed.add_field(
+        name="Entries",
+        value=str(len(entries)),
+        inline=False
+    )
+
+    if len(entries) == 0:
+
+        ended_embed.add_field(
+            name="Winners",
+            value="No entries received.",
+            inline=False
+        )
+
+        ended_embed.set_footer(text="Giveaway ended")
+
+        await message.edit(embed=ended_embed, view=None)
+
+    else:
+
+        actual_winners = min(winners, len(entries))
+        selected = random.sample(entries, actual_winners)
+        winner_mentions = "\n".join([f"<@{uid}>" for uid in selected])
+
+        ended_embed.add_field(
+            name=f"Winner{'s' if actual_winners > 1 else ''}",
+            value=winner_mentions,
+            inline=False
+        )
+
+        ended_embed.set_footer(text="Giveaway ended")
+
+        await message.edit(embed=ended_embed, view=None)
+
+        await message.channel.send(
+            f"🎉 Congratulations {winner_mentions}! "
+            f"You won **{prize}**!"
+        )
 
 
 class Giveaway(commands.Cog):
@@ -57,8 +115,6 @@ class Giveaway(commands.Cog):
             seconds = duration * 86400
             duration_text = f"{duration} day{'s' if duration != 1 else ''}"
 
-        from views.giveaway_view import GiveawayView
-
         view = GiveawayView()
 
         embed = discord.Embed(
@@ -66,107 +122,20 @@ class Giveaway(commands.Cog):
             color=0x8000ff
         )
 
-        embed.add_field(
-            name="Prize",
-            value=prize,
-            inline=False
-        )
+        embed.add_field(name="Prize", value=prize, inline=False)
+        embed.add_field(name="Winners", value=str(winners), inline=False)
+        embed.add_field(name="Duration", value=duration_text, inline=False)
+        embed.set_footer(text="Click the button below to enter!")
 
-        embed.add_field(
-            name="Winners",
-            value=str(winners),
-            inline=False
-        )
-
-        embed.add_field(
-            name="Duration",
-            value=duration_text,
-            inline=False
-        )
-
-        embed.set_footer(
-            text="Click the button below to enter!"
-        )
-
-        message = await channel.send(
-            embed=embed,
-            view=view
-        )
+        message = await channel.send(embed=embed, view=view)
 
         await interaction.response.send_message(
             f"✅ Giveaway started in {channel.mention}",
             ephemeral=True
         )
 
-        await asyncio.sleep(seconds)
-
-        view.stop()
-
-        entries = view.entries
-
-        ended_embed = discord.Embed(
-            title="🎉 Giveaway Ended",
-            color=0x8000ff
-        )
-
-        ended_embed.add_field(
-            name="Prize",
-            value=prize,
-            inline=False
-        )
-
-        ended_embed.add_field(
-            name="Entries",
-            value=str(len(entries)),
-            inline=False
-        )
-
-        if len(entries) == 0:
-
-            ended_embed.add_field(
-                name="Winners",
-                value="No entries received.",
-                inline=False
-            )
-
-            ended_embed.set_footer(
-                text="Giveaway ended"
-            )
-
-            await message.edit(
-                embed=ended_embed,
-                view=None
-            )
-
-        else:
-
-            actual_winners = min(winners, len(entries))
-
-            selected = random.sample(entries, actual_winners)
-
-            winner_mentions = "\n".join(
-                [f"<@{uid}>" for uid in selected]
-            )
-
-            ended_embed.add_field(
-                name=f"Winner{'s' if actual_winners > 1 else ''}",
-                value=winner_mentions,
-                inline=False
-            )
-
-            ended_embed.set_footer(
-                text="Giveaway ended"
-            )
-
-            await message.edit(
-                embed=ended_embed,
-                view=None
-            )
-
-            await channel.send(
-                f"🎉 Congratulations {winner_mentions}! "
-                f"You won **{prize}**!"
-            )
+        entries_ref = {"seconds": seconds, "view": view}
+        asyncio.create_task(end_giveaway(message, prize, winners, entries_ref))
 
 
 async def setup(bot):
