@@ -164,3 +164,193 @@ class Moderation(commands.Cog):
             )
 
             embed.add_field(
+                name="Strike",
+                value=f"{strike_count}/3",
+                inline=False
+            )
+
+            embed.add_field(
+                name="Warned By",
+                value=interaction.user.mention,
+                inline=False
+            )
+
+            embed.add_field(
+                name="Warning ID",
+                value=str(warning_id),
+                inline=False
+            )
+
+            if strike_count >= 3:
+                embed.add_field(
+                    name="Action Taken",
+                    value="⏱️ User timed out for 1 hour",
+                    inline=False
+                )
+
+            await mod_logs.send(embed=embed)
+
+        response = f"⚠️ {member.mention} has been warned. Strike **{strike_count}/3**."
+
+        if strike_count >= 3:
+            response += " They have been timed out for 1 hour."
+
+        await interaction.response.send_message(response)
+
+    @app_commands.command(
+        name="warnings",
+        description="View a user's warnings"
+    )
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
+    async def warnings(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member
+    ):
+        if not is_staff(interaction.user):
+            await interaction.response.send_message(
+                "❌ Staff only.", ephemeral=True
+            )
+            return
+
+        warnings = get_warnings(member.id)
+
+        embed = discord.Embed(
+            title=f"⚠️ Warnings for {member.display_name}",
+            color=0xff8800
+        )
+
+        if not warnings:
+            embed.description = "This user has no warnings."
+        else:
+            for warning in warnings:
+                warning_id, staff_id, reason, timestamp = warning
+                staff = interaction.guild.get_member(staff_id)
+                staff_name = staff.display_name if staff else "Unknown"
+                embed.add_field(
+                    name=f"ID #{warning_id} — {timestamp.strftime('%d/%m/%Y %H:%M')}",
+                    value=f"**Reason:** {reason}\n**Issued by:** {staff_name}",
+                    inline=False
+                )
+
+        embed.set_footer(
+            text=f"Total strikes: {len(warnings)}/3"
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+
+    @app_commands.command(
+        name="removewarning",
+        description="Remove a warning by ID"
+    )
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
+    async def removewarning(
+        self,
+        interaction: discord.Interaction,
+        warning_id: int
+    ):
+        if not is_staff(interaction.user):
+            await interaction.response.send_message(
+                "❌ Staff only.", ephemeral=True
+            )
+            return
+
+        remove_warning(warning_id)
+
+        await interaction.response.send_message(
+            f"✅ Warning **#{warning_id}** has been removed.",
+            ephemeral=True
+        )
+
+    @app_commands.command(
+        name="addword",
+        description="Add a word to the blacklist"
+    )
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
+    async def addword(
+        self,
+        interaction: discord.Interaction,
+        word: str
+    ):
+        if not is_staff(interaction.user):
+            await interaction.response.send_message(
+                "❌ Staff only.", ephemeral=True
+            )
+            return
+
+        add_blacklisted_word(word)
+
+        await interaction.response.send_message(
+            f"✅ **{word}** has been added to the blacklist.",
+            ephemeral=True
+        )
+
+    @app_commands.command(
+        name="removeword",
+        description="Remove a word from the blacklist"
+    )
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
+    async def removeword(
+        self,
+        interaction: discord.Interaction,
+        word: str
+    ):
+        if not is_staff(interaction.user):
+            await interaction.response.send_message(
+                "❌ Staff only.", ephemeral=True
+            )
+            return
+
+        remove_blacklisted_word(word)
+
+        await interaction.response.send_message(
+            f"✅ **{word}** has been removed from the blacklist.",
+            ephemeral=True
+        )
+
+    @app_commands.command(
+        name="listwords",
+        description="View the current blacklist"
+    )
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.default_permissions(send_messages=True)
+    async def listwords(
+        self,
+        interaction: discord.Interaction
+    ):
+        if not is_staff(interaction.user):
+            await interaction.response.send_message(
+                "❌ Staff only.", ephemeral=True
+            )
+            return
+
+        words = get_blacklisted_words()
+
+        if not words:
+            await interaction.response.send_message(
+                "📋 The blacklist is currently empty.",
+                ephemeral=True
+            )
+            return
+
+        embed = discord.Embed(
+            title="📋 Custom Blacklist",
+            description="\n".join(words),
+            color=0x8000ff
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(Moderation(bot))
