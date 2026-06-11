@@ -69,6 +69,27 @@ def setup_database():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS giveaways (
+        id SERIAL PRIMARY KEY,
+        message_id BIGINT UNIQUE NOT NULL,
+        channel_id BIGINT NOT NULL,
+        prize TEXT NOT NULL,
+        winners INTEGER NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        status TEXT DEFAULT 'active'
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS giveaway_entries (
+        id SERIAL PRIMARY KEY,
+        giveaway_id INTEGER REFERENCES giveaways(id),
+        user_id BIGINT NOT NULL,
+        UNIQUE(giveaway_id, user_id)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -468,3 +489,152 @@ def get_warning_count(user_id: int):
     conn.close()
 
     return count
+
+
+def create_giveaway(
+    message_id: int,
+    channel_id: int,
+    prize: str,
+    winners: int,
+    end_time
+):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO giveaways
+        (message_id, channel_id, prize, winners, end_time)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING id
+        """,
+        (message_id, channel_id, prize, winners, end_time)
+    )
+
+    giveaway_id = cur.fetchone()[0]
+
+    conn.commit()
+    conn.close()
+
+    return giveaway_id
+
+
+def add_giveaway_entry(giveaway_id: int, user_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO giveaway_entries (giveaway_id, user_id)
+            VALUES (%s, %s)
+            """,
+            (giveaway_id, user_id)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception:
+        conn.close()
+        return False
+
+
+def get_giveaway_entries(giveaway_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT user_id FROM giveaway_entries
+        WHERE giveaway_id=%s
+        """,
+        (giveaway_id,)
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return [row[0] for row in rows]
+
+
+def get_giveaway_entry_count(giveaway_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT COUNT(*) FROM giveaway_entries
+        WHERE giveaway_id=%s
+        """,
+        (giveaway_id,)
+    )
+
+    count = cur.fetchone()[0]
+
+    conn.close()
+
+    return count
+
+
+def get_giveaway_by_message(message_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT id, channel_id, prize, winners, end_time, status
+        FROM giveaways
+        WHERE message_id=%s
+        """,
+        (message_id,)
+    )
+
+    row = cur.fetchone()
+
+    conn.close()
+
+    return row
+
+
+def get_active_giveaways():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT id, message_id, channel_id, prize, winners, end_time
+        FROM giveaways
+        WHERE status='active'
+        """
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return rows
+
+
+def end_giveaway_db(giveaway_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE giveaways
+        SET status='ended'
+        WHERE id=%s
+        """,
+        (giveaway_id,)
+    )
+
+    conn.commit()
+    conn.close()
