@@ -52,6 +52,13 @@ def setup_database():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS blacklist (
+        id SERIAL PRIMARY KEY,
+        word TEXT UNIQUE NOT NULL
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -316,3 +323,57 @@ def get_leaderboard():
     conn.close()
 
     return rows
+
+
+def add_blacklisted_word(word: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO blacklist (word)
+        VALUES (%s)
+        ON CONFLICT (word) DO NOTHING
+        """,
+        (word.lower(),)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def remove_blacklisted_word(word: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM blacklist
+        WHERE word=%s
+        """,
+        (word.lower(),)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_blacklisted_words():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT word FROM blacklist
+        ORDER BY word ASC
+        """
+    )
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    return [row[0] for row in rows]
