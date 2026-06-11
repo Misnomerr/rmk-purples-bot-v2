@@ -76,13 +76,8 @@ class EmbedBuilder(commands.Cog):
         )
 
         embed.set_footer(text="Welcome to RMK Purples")
-
         await channel.send(embed=embed)
-
-        await interaction.response.send_message(
-            f"✅ Welcome embed posted in {channel.mention}",
-            ephemeral=True
-        )
+        await interaction.response.send_message(f"✅ Welcome embed posted in {channel.mention}", ephemeral=True)
 
     @app_commands.command(
         name="faqbuilder",
@@ -99,16 +94,36 @@ class EmbedBuilder(commands.Cog):
         question_2: str,
         answer_2: str,
         question_3: str,
-        answer_3: str
+        answer_3: str,
+        question_4: str,
+        answer_4: str,
+        question_5: str,
+        answer_5: str,
+        question_6: str,
+        answer_6: str,
+        question_7: str,
+        answer_7: str
     ):
         if not is_staff(interaction.user):
             await interaction.response.send_message("❌ Staff only.", ephemeral=True)
             return
 
-        embed = discord.Embed(title="❓ Frequently Asked Questions", color=0x8000ff)
-        embed.add_field(name=question_1, value=answer_1, inline=False)
-        embed.add_field(name=question_2, value=answer_2, inline=False)
-        embed.add_field(name=question_3, value=answer_3, inline=False)
+        description = (
+            f"**{question_1}**\n{answer_1}\n\n"
+            f"**{question_2}**\n{answer_2}\n\n"
+            f"**{question_3}**\n{answer_3}\n\n"
+            f"**{question_4}**\n{answer_4}\n\n"
+            f"**{question_5}**\n{answer_5}\n\n"
+            f"**{question_6}**\n{answer_6}\n\n"
+            f"**{question_7}**\n{answer_7}"
+        )
+
+        embed = discord.Embed(
+            title="❓ Frequently Asked Questions",
+            description=description,
+            color=0x8000ff
+        )
+
         embed.set_footer(text="Frequently Asked Questions")
         await channel.send(embed=embed)
         await interaction.response.send_message(f"✅ FAQ posted in {channel.mention}", ephemeral=True)
