@@ -53,6 +53,7 @@ async def main():
     await load("cogs.announcements", "announcements")
     await load("cogs.embed_builder", "embed builder")
     await load("cogs.giveaway", "giveaway")
+    await load("cogs.moderation", "moderation")
     await bot.start(TOKEN)
 
 asyncio.run(main())
