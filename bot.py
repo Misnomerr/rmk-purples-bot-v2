@@ -6,6 +6,7 @@ from database import setup_database
 from views.ticket_panel import CreateTicketButton
 from views.ticket_controls import TicketControls
 from views.feedback_views import FeedbackReviewView
+from views.giveaway_view import GiveawayView
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = discord.Object(id=1513299075062042777)
@@ -43,6 +44,7 @@ async def on_ready():
     bot.add_view(CreateTicketButton())
     bot.add_view(TicketControls())
     bot.add_view(FeedbackReviewView())
+    bot.add_view(GiveawayView())
     print("Ready")
 
 async def main():
